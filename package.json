@@ -1,0 +1,23 @@
+{
+  "name": "christmas-mountain",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "postinstall": "(npm run install-all && npm run link-all)",
+    "install-all": "npm --prefix system install && npm --prefix server install && npm --prefix client install",
+    "link-all": "(cd server && npm link ../system) && (cd client && npm link ../system)",
+    "dev": "npm-run-all --parallel dev:*",
+    "dev:system": "npm run --prefix system dev",
+    "dev:server": "npm run --prefix server dev",
+    "dev:client": "npm run --prefix client dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  },
+  "dependencies": {
+    "husky": "^4.3.8"
+  }
+}
