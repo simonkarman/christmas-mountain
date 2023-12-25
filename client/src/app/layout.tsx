@@ -1,8 +1,8 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Krmx - Best Practices',
-  description: 'Showcase of best practices when using Krmx with React',
+  title: 'Christmas Mountain',
+  description: 'A Christmas themed mountain excavation game',
 };
 
 export default function RootLayout({
@@ -19,7 +19,7 @@ export default function RootLayout({
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body
-        className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 flex flex-col items-center justify-between mx-auto h-screen h-[100svh]"
+        className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 flex flex-col items-center justify-between mx-auto h-[100svh]"
       >
         <div className='flex-grow flex flex-col justify-center gap-4 items-center w-full p-2'>
           {children}

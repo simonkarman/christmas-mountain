@@ -2,7 +2,7 @@
 import { KrmxWithSystemProvider, useSystem } from '@/provider/krmx-with-system-provider';
 import { useKrmx } from '@krmx/client';
 import { useState } from 'react';
-import { decrement, increment } from 'system';
+import { ready } from 'system';
 
 export default function Page() {
   const [serverUrl] = useState('ws://localhost:8082');
@@ -33,7 +33,7 @@ function KrmxLoginForm() {
     return (<>
       <div className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
         <img className="w-8 h-8 mr-3" src="/apple-touch-icon.png" alt="logo" />
-            Krmx Best Practices
+            Christmas Mountain
       </div>
       <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700">
         <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
@@ -84,8 +84,8 @@ function KrmxLoginForm() {
           <h2 className='text-lg md:text-xl'>
           Hi, <strong>{username[0].toUpperCase() + username.slice(1)}</strong> 👋
           </h2>
-          <button className='text-white bg-orange-600 hover:bg-orange-700 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium
-              rounded-lg text-sm px-5 py-1 text-center dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-orange-800' onClick={leave}>
+          <button className='text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium
+              rounded-lg text-sm px-5 py-1 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800' onClick={leave}>
           Leave
           </button>
         </div>
@@ -110,31 +110,46 @@ function KrmxLoginForm() {
 }
 
 function Application() {
-  const { state, optimisticState, dispatcher } = useSystem();
+  const { optimisticState: state, dispatcher } = useSystem();
+  const { username } = useKrmx();
   return <>
     <div className='w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700'>
       <div className="px-6 py-2 space-y-3 sm:space-y-4 sm:px-8 sm:py-4">
-        <h2 className='font-bold text-xl'>State</h2>
-        <div className='w-full flex items-center justify-center gap-4'>
-          <button
-            className='text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium
-              rounded-lg text-sm px-5 py-1 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800'
-            onClick={() => dispatcher(decrement(1))}
-          >
-            Decrement
-          </button>
-          <p className='flex-grow text-center'>
-            <span className='font-bold text-6xl'>{optimisticState.counter}</span>
-            <span className='ml-2 text-gray-600 dark:text-gray-300'>{state.counter}</span>
-          </p>
-          <button
-            className='text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium
-              rounded-lg text-sm px-5 py-1 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'
-            onClick={() => dispatcher(increment(1))}
-          >
-            Increment
-          </button>
-        </div>
+        {state.phase === 'lobby' && (<>
+          <div className='flex justify-between'>
+            <h2 className='font-bold text-xl'>Lobby</h2>
+            {username in state.lobby && state.lobby[username].isReady
+              ? <button
+                className='text-white bg-orange-600 hover:bg-orange-700 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium
+                  rounded-lg text-sm px-5 py-1 text-center dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-orange-800'
+                onClick={() => dispatcher(ready(false))}
+              >
+              Un-Ready
+              </button>
+              : <button
+                className='text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium
+                  rounded-lg text-sm px-5 py-1 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'
+                onClick={() => dispatcher(ready(true))}
+              >
+              Ready
+              </button>
+            }
+          </div>
+          {state.starting === -1
+            ? (<p>
+              Waiting for{' '}
+              <strong className='font-bold'>{Object.keys(state.lobby).filter(n => !state.lobby[n].isReady).join(' and ')}</strong>
+              {' '}to ready up!
+            </p>)
+            : <p>Starting in {state.starting - state.tick}...</p>
+          }
+          {/*{JSON.stringify(state, undefined, 1)}*/}
+        </>)}
+        {state.phase === 'playing' && <>
+          <h2 className='font-bold text-xl'>Game</h2>
+          <p>Players: {state.players.join(', ')}</p>
+          <p>Spectators: {state.spectators.join(', ')}</p>
+        </>}
       </div>
     </div>
   </>;

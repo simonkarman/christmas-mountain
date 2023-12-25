@@ -71,20 +71,22 @@ const dispatchMessage = (dispatcher: string, message: Message) => {
 server.on('message', dispatchMessage);
 
 // Add history file logic when a file name is provided
-if (HISTORY_FILE_NAME) {
+if (HISTORY_FILE_NAME !== undefined) {
+  const historyFileName = HISTORY_FILE_NAME;
   const saveHistory = () => {
-    fs.mkdirSync('./output', { recursive: true });
-    fs.writeFileSync(HISTORY_FILE_NAME, JSON.stringify(history, undefined, 2));
+    const directoryName = historyFileName.slice(0, historyFileName.lastIndexOf('/'));
+    fs.mkdirSync(directoryName, { recursive: true });
+    fs.writeFileSync(historyFileName, JSON.stringify(history, undefined, 2));
   };
   const loadFromHistory = (): void => {
     if (history.length !== 0) {
       throw new Error('cannot load history if there is already history is already present');
     }
-    if (!fs.existsSync(HISTORY_FILE_NAME)) {
+    if (!fs.existsSync(historyFileName)) {
       return;
     }
     const historySchema = z.array(z.object({ hash: z.string().optional(), dispatcher: z.string(), type: z.string(), payload: z.any() }));
-    const fileHistoryParsed = historySchema.safeParse(JSON.parse(fs.readFileSync(HISTORY_FILE_NAME).toString()));
+    const fileHistoryParsed = historySchema.safeParse(JSON.parse(fs.readFileSync(historyFileName).toString()));
     if (fileHistoryParsed.success) {
       fileHistoryParsed.data.forEach(historyEntry => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

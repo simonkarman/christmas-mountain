@@ -5,7 +5,7 @@
   "description": "",
   "main": "src/server.ts",
   "scripts": {
-    "dev": "(rm -r output/ && nodemon --ignore 'output/*.json' --exec \"ts-node src/index.ts\" src/index.ts)",
+    "dev": "((rm -r output/ || true) && nodemon --ignore 'output/*.json' --exec \"ts-node src/index.ts\" src/index.ts)",
     "test": "jest --coverage --verbose",
     "lint": "eslint . --ext .ts"
   },
