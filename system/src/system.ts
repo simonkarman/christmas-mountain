@@ -19,11 +19,19 @@ export const system = new System({
   tree: [
     [1],
     [2, 2],
-    [1, 3, 1],
+    [1, undefined, 1],
     [1, 3, 2, 1],
-    [2, 2, 1, 1, 3],
-    [1, 1, 3, 1, 2, 1],
-    [2, 3, 2, 4, 2, 1, 3],
+    [2, 2, 1, undefined, 3],
+    [1, undefined, 3, 1, 2, 1],
+    [2, 3, 2, 1, undefined, 1, 3],
+    [1, 2, 2, 1, 3, 1, 2, 2],
+    [2, undefined, 2, 1, 1, 3, 2, 1, 4],
+    [3, 1, 2, 1, 1, 3, 2, undefined, 2, 1],
+    [1, 3, 1, 2, undefined, 5, 4, 2, 2, 1, 3],
+    [1, 2, 1, 1, 2, 1, 1, 3, 1, 2, 1, 2],
+    [3, 4, 1, undefined, 1, 1, 2, 1, 1, 2, 3, undefined, 2],
+    [2, 1, 2, 1, 5, 1, 3, undefined, 2, 2, 1, 1, 1, 1],
+    [1, 3, 4, 1, 1, 1, 4, 5, 2, 4, 1, 3, 1, 2, 3],
   ] as Tree,
 });
 
@@ -89,7 +97,10 @@ export const ready = system.when('ready', z.boolean(), (state, dispatcher, paylo
   }
 });
 
-export const pick = system.when('pick', z.object({ x: z.number(), y: z.number() }), (state, dispatcher, payload) => {
+export const pick = system.when('pick', z.object({ x: z.number().min(0), y: z.number().min(0) }), (state, dispatcher, payload) => {
+  if (payload.x > payload.y || payload.y > state.tree.length - 1) {
+    return;
+  }
   const score = state.tree[payload.y][payload.x];
   if (state.phase === 'lobby' || state.turn !== dispatcher || !isPickable(state.tree, payload.x, payload.y) || score === undefined) {
     return;
@@ -97,6 +108,12 @@ export const pick = system.when('pick', z.object({ x: z.number(), y: z.number() 
   state.scores[dispatcher] += score;
   state.turn = state.players[(state.players.indexOf(dispatcher) + 1) % state.players.length];
   state.tree[payload.y][payload.x] = undefined;
+
+  if (state.tree.every((row) => row.every((block) => block === undefined))) {
+    state.phase = 'finished';
+    state.spectators.push(...state.players);
+    state.players = [];
+  }
 });
 
 export const actions = [tick, joiner, leaver, ready, pick] as const;

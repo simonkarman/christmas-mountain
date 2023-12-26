@@ -157,18 +157,18 @@ function Application() {
         <div className='px-6 py-2 space-y-3 sm:space-y-4 sm:px-8 sm:py-4 font-bold text-center'>
           {state.spectators.includes(username) && 'Welcome. You are spectating!' }
         </div>
-        <div className='w-full mb-4 flex flex-col gap-2'>
+        <div className='w-full mb-4 flex flex-col gap-1'>
           {state.tree.map((slice, y) => {
-            return <div className='w-full flex justify-center gap-2 items-center'>
+            return <div className='w-full flex justify-center gap-1 items-center'>
               {slice.map((block, x) => {
                 if (block === undefined) {
-                  return <div className='w-12 h-12 border rounded border-dashed border-gray-200
+                  return <div className='w-6 h-6 border rounded border-dashed border-gray-200
                   dark:border-gray-900 bg-gray-100 dark:bg-gray-700'/>;
                 }
                 const pickable = isPickable(state.tree, x, y);
                 return <button
                   className={
-                    'w-12 h-12 border rounded flex items-center justify-center text-xl font-bold' +
+                    'w-6 h-6 border rounded flex items-center justify-center text-xl font-bold' +
                     `border-green-200 dark:border-green-900 bg-green-100 dark:bg-green-800 ${pickable
                       ? 'font-extrabold text-green-900 dark:text-green-100'
                       : 'text-green-300 dark:text-green-600 cursor-default'}`
@@ -198,6 +198,27 @@ function Application() {
             </>;
           })}
         </ul>
+      </>}
+      {state.phase === 'finished' && <>
+        <div className="px-6 py-2 space-y-3 sm:space-y-4 sm:px-8 sm:py-4">
+          <div className='flex justify-between'>
+            <h2 className="font-bold text-xl">Finished!</h2>
+            <p className='text-8xl'>🌟</p>
+          </div>
+          <ul>
+            {Object.keys(state.scores).sort((a, b) => state.scores[b] - state.scores[a]).map((name, i) => <li
+              className={`${i === 0 ? 'text-2xl' : ''} pb-2`}
+            >
+              <span className={'font-bold text-xs'}>{i + 1}.</span>
+              {' '}
+              {name[0].toUpperCase() + name.slice(1)} with
+              {' '}
+              <span className={'font-bold text-xl'}>{state.scores[name]}</span>
+              {' '}
+              points
+            </li>)}
+          </ul>
+        </div>
       </>}
     </div>
     {state.spectators.length > 0 &&
