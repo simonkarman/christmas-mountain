@@ -1,8 +1,8 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Christmas Mountain',
-  description: 'A Christmas themed mountain excavation game',
+  title: 'Christmas Tree',
+  description: 'A Christmas themed game build with Krmx',
 };
 
 export default function RootLayout({

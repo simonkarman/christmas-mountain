@@ -34,7 +34,7 @@ function KrmxLoginForm() {
     return (<>
       <div className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
         <img className="w-8 h-8 mr-3" src="/apple-touch-icon.png" alt="logo" />
-            Christmas Mountain
+            Christmas Tree
       </div>
       <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700">
         <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
@@ -158,14 +158,14 @@ function Application() {
           {state.spectators.includes(username) && 'Welcome. You are spectating!' }
         </div>
         <div className='w-full mb-4 flex flex-col gap-2'>
-          {state.mountain.map((slice, y) => {
+          {state.tree.map((slice, y) => {
             return <div className='w-full flex justify-center gap-2 items-center'>
               {slice.map((block, x) => {
                 if (block === undefined) {
                   return <div className='w-12 h-12 border rounded border-dashed border-gray-200
                   dark:border-gray-900 bg-gray-100 dark:bg-gray-700'/>;
                 }
-                const pickable = isPickable(state.mountain, x, y);
+                const pickable = isPickable(state.tree, x, y);
                 return <button
                   className={
                     'w-12 h-12 border rounded flex items-center justify-center text-xl font-bold' +

@@ -4,7 +4,7 @@ export const ROOT_DISPATCHER = '<ROOT_DISPATCHER>';
 
 export type Phase = 'lobby' | 'playing' | 'finished';
 
-type Mountain = ((number | undefined)[])[];
+type Tree = ((number | undefined)[])[];
 export const system = new System({
   tick: 0,
 
@@ -16,7 +16,7 @@ export const system = new System({
   players: [] as string[],
   scores: {} as { [name: string]: number },
   turn: undefined as (undefined | string),
-  mountain: [
+  tree: [
     [1],
     [2, 2],
     [1, 3, 1],
@@ -24,12 +24,12 @@ export const system = new System({
     [2, 2, 1, 1, 3],
     [1, 1, 3, 1, 2, 1],
     [2, 3, 2, 4, 2, 1, 3],
-  ] as Mountain,
+  ] as Tree,
 });
 
-export const isPickable = (mountain: Mountain, x: number, y: number) => {
-  const leftTop = x === 0 || mountain[y - 1][x - 1] === undefined;
-  const rightTop = x === y || mountain[y - 1][x] === undefined;
+export const isPickable = (tree: Tree, x: number, y: number) => {
+  const leftTop = x === 0 || tree[y - 1][x - 1] === undefined;
+  const rightTop = x === y || tree[y - 1][x] === undefined;
   return y === 0 || (rightTop && leftTop);
 };
 
@@ -90,13 +90,13 @@ export const ready = system.when('ready', z.boolean(), (state, dispatcher, paylo
 });
 
 export const pick = system.when('pick', z.object({ x: z.number(), y: z.number() }), (state, dispatcher, payload) => {
-  const score = state.mountain[payload.y][payload.x];
-  if (state.phase === 'lobby' || state.turn !== dispatcher || !isPickable(state.mountain, payload.x, payload.y) || score === undefined) {
+  const score = state.tree[payload.y][payload.x];
+  if (state.phase === 'lobby' || state.turn !== dispatcher || !isPickable(state.tree, payload.x, payload.y) || score === undefined) {
     return;
   }
   state.scores[dispatcher] += score;
   state.turn = state.players[(state.players.indexOf(dispatcher) + 1) % state.players.length];
-  state.mountain[payload.y][payload.x] = undefined;
+  state.tree[payload.y][payload.x] = undefined;
 });
 
 export const actions = [tick, joiner, leaver, ready, pick] as const;
