@@ -4,6 +4,7 @@ export const ROOT_DISPATCHER = '<ROOT_DISPATCHER>';
 
 export type Phase = 'lobby' | 'playing' | 'finished';
 
+type Mountain = ((number | undefined)[])[];
 export const system = new System({
   tick: 0,
 
@@ -13,23 +14,34 @@ export const system = new System({
   spectators: [] as string[],
 
   players: [] as string[],
+  scores: {} as { [name: string]: number },
   turn: undefined as (undefined | string),
-  // mountain: [
-  //   [1],
-  //   [2, 3],
-  //   [4, 5, 6],
-  //   [7, 8, 9, 10],
-  // ] as ((number | undefined)[])[],
+  mountain: [
+    [1],
+    [2, 2],
+    [1, 3, 1],
+    [1, 3, 2, 1],
+    [2, 2, 1, 1, 3],
+    [1, 1, 3, 1, 2, 1],
+    [2, 3, 2, 4, 2, 1, 3],
+  ] as Mountain,
 });
+
+export const isPickable = (mountain: Mountain, x: number, y: number) => {
+  const leftTop = x === 0 || mountain[y - 1][x - 1] === undefined;
+  const rightTop = x === y || mountain[y - 1][x] === undefined;
+  return y === 0 || (rightTop && leftTop);
+};
 
 export const tick = system.when('tick', z.number().positive().int(), (state, dispatcher, payload) => {
   if (dispatcher !== ROOT_DISPATCHER) {
     return;
   }
   state.tick = payload;
-  if (state.starting > 0 && state.tick >= state.starting) {
+  if (state.phase === 'lobby' && state.starting > 0 && state.tick >= state.starting) {
     state.phase = 'playing';
     state.players = Object.keys(state.lobby);
+    state.scores = Object.fromEntries(state.players.map((player) => [player, 0]));
     state.turn = state.players[0];
   }
 });
@@ -61,8 +73,6 @@ export const leaver = system.when('leaver', z.string().min(3), (state, dispatche
     const spectator = state.spectators.indexOf(payload);
     if (spectator >= 0) {
       state.spectators.splice(spectator, 1);
-    } else {
-      console.warn('[WARN] a player left');
     }
   }
 });
@@ -73,10 +83,20 @@ export const ready = system.when('ready', z.boolean(), (state, dispatcher, paylo
   }
   state.lobby[dispatcher].isReady = payload;
   if (Object.keys(state.lobby).every((username) => state.lobby[username].isReady)) {
-    state.starting = state.tick + 10;
+    state.starting = state.tick + 5;
   } else {
     state.starting = -1;
   }
 });
 
-export const actions = [tick, joiner, leaver, ready] as const;
+export const pick = system.when('pick', z.object({ x: z.number(), y: z.number() }), (state, dispatcher, payload) => {
+  const score = state.mountain[payload.y][payload.x];
+  if (state.phase === 'lobby' || state.turn !== dispatcher || !isPickable(state.mountain, payload.x, payload.y) || score === undefined) {
+    return;
+  }
+  state.scores[dispatcher] += score;
+  state.turn = state.players[(state.players.indexOf(dispatcher) + 1) % state.players.length];
+  state.mountain[payload.y][payload.x] = undefined;
+});
+
+export const actions = [tick, joiner, leaver, ready, pick] as const;

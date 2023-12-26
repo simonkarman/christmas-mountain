@@ -2,7 +2,7 @@
 import { KrmxWithSystemProvider, useSystem } from '@/provider/krmx-with-system-provider';
 import { useKrmx } from '@krmx/client';
 import { useState } from 'react';
-import { ready } from 'system';
+import { isPickable, pick, ready } from 'system';
 
 export default function Page() {
   const [serverUrl] = useState('ws://localhost:8082');
@@ -15,6 +15,7 @@ export default function Page() {
 
 function KrmxLoginForm() {
   const { username, isConnected, isLinked, link, rejectionReason, leave, users } = useKrmx();
+  const { state } = useSystem();
   const [ usernameInput, setUsernameInput ] = useState('');
 
   if (!isConnected) {
@@ -89,8 +90,9 @@ function KrmxLoginForm() {
           Leave
           </button>
         </div>
-        <ul className='flex gap-1 text-sm md:text-base pb-0.5 w-full justify-between border-b border-gray-50 dark:border-gray-700 flex-wrap'>
+        <ul className='flex gap-4 text-sm md:text-base pb-0.5 w-full justify-left border-b border-gray-50 dark:border-gray-700 flex-wrap'>
           {Object.entries(users)
+            .filter(([username]) => state.phase === 'lobby' || state.players.includes(username))
             .map(([otherUsername, { isLinked }]) => (
               <li
                 key={otherUsername}
@@ -99,7 +101,7 @@ function KrmxLoginForm() {
                   : 'text-gray-400 dark:text-gray-400'}`}
               >
                 <span>{isLinked ? '👤' : '🚫'}</span>
-                <span>{otherUsername}</span>
+                <span>{otherUsername[0].toUpperCase() + otherUsername.slice(1)}</span>
               </li>),
             )}
         </ul>
@@ -113,44 +115,106 @@ function Application() {
   const { optimisticState: state, dispatcher } = useSystem();
   const { username } = useKrmx();
   return <>
-    <div className='w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700'>
-      <div className="px-6 py-2 space-y-3 sm:space-y-4 sm:px-8 sm:py-4">
-        {state.phase === 'lobby' && (<>
-          <div className='flex justify-between'>
-            <h2 className='font-bold text-xl'>Lobby</h2>
+    <div className='w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 overflow-hidden'>
+      {state.phase === 'lobby' && (
+        <div className="px-6 py-2 space-y-3 sm:space-y-4 sm:px-8 sm:py-4">
+          <div className="flex justify-between">
+            <h2 className="font-bold text-xl">Lobby</h2>
             {username in state.lobby && state.lobby[username].isReady
               ? <button
-                className='text-white bg-orange-600 hover:bg-orange-700 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium
-                  rounded-lg text-sm px-5 py-1 text-center dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-orange-800'
+                className="text-white bg-orange-600 hover:bg-orange-700 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium
+                  rounded-lg text-sm px-5 py-1 text-center dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-orange-800"
                 onClick={() => dispatcher(ready(false))}
               >
-              Un-Ready
+                Un-Ready
               </button>
               : <button
-                className='text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium
-                  rounded-lg text-sm px-5 py-1 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'
+                className="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium
+                  rounded-lg text-sm px-5 py-1 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
                 onClick={() => dispatcher(ready(true))}
               >
-              Ready
+                Ready
               </button>
             }
           </div>
           {state.starting === -1
             ? (<p>
               Waiting for{' '}
-              <strong className='font-bold'>{Object.keys(state.lobby).filter(n => !state.lobby[n].isReady).join(' and ')}</strong>
+              <strong className="font-bold">
+                {Object
+                  .keys(state.lobby)
+                  .filter(n => !state.lobby[n].isReady)
+                  .map(username => username[0].toUpperCase() + username.slice(1))
+                  .join(' and ')
+                }
+              </strong>
               {' '}to ready up!
             </p>)
             : <p>Starting in {state.starting - state.tick}...</p>
           }
-          {/*{JSON.stringify(state, undefined, 1)}*/}
-        </>)}
-        {state.phase === 'playing' && <>
-          <h2 className='font-bold text-xl'>Game</h2>
-          <p>Players: {state.players.join(', ')}</p>
-          <p>Spectators: {state.spectators.join(', ')}</p>
-        </>}
-      </div>
+        </div>)}
+      {state.phase === 'playing' && <>
+        <div className='px-6 py-2 space-y-3 sm:space-y-4 sm:px-8 sm:py-4 font-bold text-center'>
+          {state.spectators.includes(username) && 'Welcome. You are spectating!' }
+        </div>
+        <div className='w-full mb-4 flex flex-col gap-2'>
+          {state.mountain.map((slice, y) => {
+            return <div className='w-full flex justify-center gap-2 items-center'>
+              {slice.map((block, x) => {
+                if (block === undefined) {
+                  return <div className='w-12 h-12 border rounded border-dashed border-gray-200
+                  dark:border-gray-900 bg-gray-100 dark:bg-gray-700'/>;
+                }
+                const pickable = isPickable(state.mountain, x, y);
+                return <button
+                  className={
+                    'w-12 h-12 border rounded flex items-center justify-center text-xl font-bold' +
+                    `border-green-200 dark:border-green-900 bg-green-100 dark:bg-green-800 ${pickable
+                      ? 'font-extrabold text-green-900 dark:text-green-100'
+                      : 'text-green-300 dark:text-green-600 cursor-default'}`
+                  }
+                  onClick={() => {
+                    dispatcher(pick({ x, y }));
+                  }}
+                >
+                  {block}
+                </button>;
+              })}
+            </div>;
+          })}
+        </div>
+        <ul className="flex w-full bg-gray-100 dark:bg-gray-700 pt-2 pb-1.5 px-2 gap-2 items-center justify-center">
+          {state.players.map((player, i) => {
+            const shownName = player === username ? 'you' : player;
+            const isTurn = state.turn === player;
+            return <>
+              {i !== 0 ? <li className='text-sm text-gray-300 dark:text-gray-500 font-bold'>&gt;</li> : undefined}
+              <li className={`flex gap-2 items-center border rounded-md px-2 ${isTurn
+                ? 'bg-amber-200 dark:bg-amber-700 border-amber-300 dark:border-amber-800 '
+                : 'bg-gray-200 dark:bg-gray-800 border-gray-300 dark:border-gray-600'}`}>
+                <div>{shownName[0].toUpperCase() + shownName.slice(1)}</div>
+                <div className="font-bold text-lg">{state.scores[player]}</div>
+              </li>
+            </>;
+          })}
+        </ul>
+      </>}
     </div>
+    {state.spectators.length > 0 &&
+      <div className='flex w-full sm:max-w-md justify-center mb-4'>
+        <ul
+          className="flex gap-2 items-center border-b border-dashed px-1
+                   border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300"
+        >
+          <li className="tracking-tighter text-xs pr-2 text-gray-400 dark:text-gray-500">spectators</li>
+          {state.spectators.map((spectator, i) => <>
+            {i !== 0 ? <li className='text-xs text-gray-300 dark:text-gray-700'>/</li> : undefined}
+            <li className='text-sm'>
+              {spectator[0].toUpperCase() + spectator.slice(1)}
+            </li>
+          </>)}
+        </ul>
+      </div>
+    }
   </>;
 }

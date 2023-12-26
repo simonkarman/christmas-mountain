@@ -1,5 +1,5 @@
 import { Message, Server } from '@krmx/server';
-import { joiner, leaver, ROOT_DISPATCHER, tick } from 'system';
+import { joiner, leaver, ready, ROOT_DISPATCHER, tick } from 'system';
 
 // Configuration
 export const PORT = 8082; // -- the port number at which the server will start
@@ -10,6 +10,10 @@ export const BATCH_SIZE = 100; // -- the number of message to collect into one b
 export const setup = (server: Server, dispatchMessage: (dispatcher: string, message: Message) => void) => {
   server.on('join', (username) => {
     dispatchMessage(ROOT_DISPATCHER, joiner(username));
+  });
+
+  server.on('unlink', (username) => {
+    dispatchMessage(username, ready(false));
   });
 
   server.on('leave', (username) => {
