@@ -5,7 +5,9 @@ import { useState } from 'react';
 import { isPickable, pick, ready } from 'system';
 
 export default function Page() {
-  const [serverUrl] = useState('ws://localhost:8082');
+  // eslint-disable-next-line no-process-env
+  const krmxUrl = process.env.NEXT_PUBLIC_KRMX_URL || 'localhost';
+  const [serverUrl] = useState(`ws://${krmxUrl}:8082`);
   return (
     <KrmxWithSystemProvider serverUrl={serverUrl}>
       <KrmxLoginForm />
