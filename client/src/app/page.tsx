@@ -46,7 +46,9 @@ function KrmxLoginForm() {
             e.preventDefault();
           }}>
             <div>
-              <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your name</label>
+              <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                Your name
+              </label>
               <input
                 type="username" name="username" id="username"
                 placeholder="username" required
@@ -58,12 +60,13 @@ function KrmxLoginForm() {
                   setUsernameInput(event.target.value);
                 }}
               />
+              <div className="pt-1 w-full text-right text-sm text-gray-300 dark:text-gray-600">you can only use a-z, A-Z and 0-9</div>
             </div>
             <button
-              type='submit'
+              type="submit"
               className="w-full text-white bg-orange-600 hover:bg-orange-700 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium
               rounded-lg text-sm px-5 py-2.5 text-center dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-orange-800">
-                Sign in
+                Join
             </button>
           </form>
           {rejectionReason && <p className="text-sm tracking-tight text-gray-700 dark:text-gray-300">
@@ -162,16 +165,16 @@ function Application() {
             return <div className='w-full flex justify-center gap-1 items-center'>
               {slice.map((block, x) => {
                 if (block === undefined) {
-                  return <div className='w-6 h-6 border rounded border-dashed border-gray-200
-                  dark:border-gray-900 bg-gray-100 dark:bg-gray-700'/>;
+                  return <div className='w-6 h-6 border rounded border-dashed border-gray-300
+                  dark:border-gray-900 bg-gray-200 dark:bg-gray-700'/>;
                 }
                 const pickable = isPickable(state.tree, x, y);
                 return <button
                   className={
-                    'w-6 h-6 border rounded flex items-center justify-center text-xl font-bold' +
-                    `border-green-200 dark:border-green-900 bg-green-100 dark:bg-green-800 ${pickable
+                    'w-6 h-6 border rounded flex items-center justify-center text-xl font-bold ' +
+                    `border-green-200 dark:border-green-900 bg-green-300 dark:bg-green-800 ${pickable
                       ? 'font-extrabold text-green-900 dark:text-green-100'
-                      : 'text-green-300 dark:text-green-600 cursor-default'}`
+                      : 'text-green-500 dark:text-green-600 cursor-default'}`
                   }
                   onClick={() => {
                     dispatcher(pick({ x, y }));
@@ -190,7 +193,7 @@ function Application() {
             return <>
               {i !== 0 ? <li className='text-sm text-gray-300 dark:text-gray-500 font-bold'>&gt;</li> : undefined}
               <li className={`flex gap-2 items-center border rounded-md px-2 ${isTurn
-                ? 'bg-amber-200 dark:bg-amber-700 border-amber-300 dark:border-amber-800 '
+                ? 'bg-amber-400 border-amber-300 dark:bg-amber-600 dark:border-amber-700'
                 : 'bg-gray-200 dark:bg-gray-800 border-gray-300 dark:border-gray-600'}`}>
                 <div>{shownName[0].toUpperCase() + shownName.slice(1)}</div>
                 <div className="font-bold text-lg">{state.scores[player]}</div>
