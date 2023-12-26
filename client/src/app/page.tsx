@@ -188,7 +188,7 @@ function Application() {
             </div>;
           })}
         </div>
-        <ul className="flex w-full bg-gray-100 dark:bg-gray-700 pt-2 pb-1.5 px-2 gap-2 items-center justify-center">
+        <ul className="flex flex-wrap w-full bg-gray-100 dark:bg-gray-700 pt-2 pb-1.5 px-2 gap-2 items-center justify-center">
           {state.players.map((player, i) => {
             const shownName = player === username ? 'you' : player;
             const isTurn = state.turn === player;
@@ -206,22 +206,24 @@ function Application() {
       </>}
       {state.phase === 'finished' && <>
         <div className="px-6 py-2 space-y-3 sm:space-y-4 sm:px-8 sm:py-4">
-          <div className='flex justify-between'>
-            <h2 className="font-bold text-xl">Finished!</h2>
-            <p className='text-8xl'>🌟</p>
-          </div>
+          <p className="text-8xl float-right">🎄</p>
+          <h2 className="font-bold text-xl">And the winner is...</h2>
           <ul>
-            {Object.keys(state.scores).sort((a, b) => state.scores[b] - state.scores[a]).map((name, i) => <li
-              className={`${i === 0 ? 'text-2xl' : ''} pb-2`}
-            >
-              <span className={'font-bold text-xs'}>{i + 1}.</span>
-              {' '}
-              {name[0].toUpperCase() + name.slice(1)} with
-              {' '}
-              <span className={'font-bold text-xl'}>{state.scores[name]}</span>
-              {' '}
-              points
-            </li>)}
+            {Object.keys(state.scores).sort((a, b) => state.scores[b] - state.scores[a]).map((name, i) => {
+              const podium = i > 3 ? 3 : i;
+              const classNames = [
+                'text-4xl text-amber-400 font-extrabold drop-shadow py-2',
+                'text-xl text-gray-800 dark:text-gray-300 font-bold drop-shadow py-1',
+                'text-amber-600 font-bold drop-shadow py-1',
+                'text-xs text-gray-700 dark:text-gray-400 py-1',
+              ][podium];
+              return <li className='flex gap-2 items-baseline pb-2'>
+                <span className='text-xs'>{i + 1}.</span>
+                <span className={classNames} >
+                  {name[0].toUpperCase() + name.slice(1)} - {state.scores[name]} points
+                </span>
+              </li>;
+            })}
           </ul>
         </div>
       </>}
@@ -229,7 +231,7 @@ function Application() {
     {state.spectators.length > 0 &&
       <div className='flex w-full sm:max-w-md justify-center mb-4'>
         <ul
-          className="flex gap-2 items-center border-b border-dashed px-1
+          className="flex flex-wrap gap-2 items-center border-b border-dashed px-1
                    border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300"
         >
           <li className="tracking-tighter text-xs pr-2 text-gray-400 dark:text-gray-500">spectators</li>
@@ -240,6 +242,22 @@ function Application() {
             </li>
           </>)}
         </ul>
+      </div>
+    }
+    {state.phase === 'playing' &&
+      <div className='w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 overflow-hidden'>
+        <div className="px-6 py-2 space-y-3 sm:space-y-4 sm:px-8 sm:py-4">
+          <h2 className="w-full border-b border-gray-200 pb-1 dark:border-gray-700 font-bold text-xl">Legend</h2>
+          <ul className='flex flex-col gap-3'>
+            {[
+              { item: '1-9', explanation: 'Score that many points!' },
+              { item: '🎁', explanation: 'Score 3 points, add +1 to surrounding AND take another turn.' },
+            ].map(({ item, explanation }) => <li className='flex gap-1'>
+              <span className='flex-shrink-0 font-bold w-8 inline-block'>{item}</span>
+              <span className='inline-block text-gray-700 dark:text-gray-400'>{explanation}</span>
+            </li>)}
+          </ul>
+        </div>
       </div>
     }
   </>;
